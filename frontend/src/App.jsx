@@ -2,6 +2,7 @@ import { useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { isAuthenticated, logout} from "./auth/authService";
+import Expenses from "./pages/Expenses";
 
 function App(){
   const [auth, setAuth] = useState(isAuthenticated());
@@ -23,15 +24,18 @@ function App(){
 
   return (
     <div>
-      <h1>Welcome to Expense Tracker</h1>
+      <h1>Expense Tracker Dashboard</h1>
+
       <button
         onClick={() => {
           logout();
           setAuth(false);
         }}
       >
-        Logout 
-      </button>  
+        Logout
+      </button>
+
+      <Expenses />
     </div>
   );
 }
