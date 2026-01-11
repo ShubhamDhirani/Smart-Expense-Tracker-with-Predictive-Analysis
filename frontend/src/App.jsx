@@ -7,6 +7,7 @@ import Analytics from "./pages/Analytics";
 import Prediction from "./pages/Prediction";
 
 
+
 function App(){
   const [auth, setAuth] = useState(isAuthenticated());
   const [showRegister, setShowRegister] = useState(false);
@@ -27,7 +28,7 @@ function App(){
 
   return (
     <div>
-      <h1>Expense Tracker Dashboard</h1>
+      <h1 className="text-4x1 text-blue-600 font-bold mb-6">Expense Tracker Dashboard</h1>
 
       <button
         onClick={() => {
