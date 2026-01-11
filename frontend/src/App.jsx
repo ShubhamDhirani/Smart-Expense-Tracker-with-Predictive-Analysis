@@ -3,6 +3,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { isAuthenticated, logout} from "./auth/authService";
 import Expenses from "./pages/Expenses";
+import Analytics from "./pages/Analytics";
+import Prediction from "./pages/Prediction";
+
 
 function App(){
   const [auth, setAuth] = useState(isAuthenticated());
@@ -36,6 +39,8 @@ function App(){
       </button>
 
       <Expenses />
+      <Analytics />
+      <Prediction />
     </div>
   );
 }
