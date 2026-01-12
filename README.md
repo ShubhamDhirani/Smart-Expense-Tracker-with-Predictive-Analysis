@@ -1,73 +1,46 @@
-MVP FEATURES
+# Smart Expense Tracker with Predictive Analytics
 
-1. User authentication
-   - Signup
-   - Login
+A full-stack expense tracking web application with intelligent analytics and AI-based expense forecasting. Built using FastAPI, React, SQLAlchemy, and Tailwind CSS, the system allows users to securely manage expenses, visualize spending patterns, and predict future expenses using machine learning.
 
-2. Expense management
-   - Add expense
-   - Edit expense
-   - Delete expense
-   - Categories
-   - Date, amount, payment mode
+## Features
 
-3. Analytics
-   - Monthly total expense
-   - Category-wise expense
-   - Month-over-month comparison
+### **Authentication and Security**
 
-4. Prediction
-   - Predict next month total expense
+   - JWT-based user authentication (register & login)
+   - Secure password hashing (bcrypt)
+   - Protected API routes
 
-5. Frontend
-   - Login page
-   - Dashboard
-   - Analytics charts
+### **Expense Management**
 
+   - Add, edit, and delete expenses
+   - Structured data model (amount, category, payment mode, date, description)
+   - Server-side validation using FastAPI + Pydantic   
+   - Persistent storage using SQLite via SQLAlchemy ORM
 
+### **Analytics Dashboard**
 
+   - Monthly total expense summary
+   - Category-wise breakdown using interactive charts
+   - Data visualisations using Recharts
+   - Dark mode support
 
-STRUCTURE OF THE APP:
+### **AI Expense Prediction**
 
-    Frontend (React)
-       ↓
-    Backend (FastAPI)
-       ↓
-    Database (SQLite/PostgreSQL)
+   - Machine Learning based next month expense prediction
+   - Uses historical monthly expense data
+   - Modular prediction service (extensible for advanced time-series models)
 
+### **Frontend**
 
-
-DATABASE DESIGN:
-
-    Table 1 : Users
-
-        id         -  uniques user id
-        email      -  login email
-        password   -  encrypted password
-        created_at -  account creation time
-
-    Table 2 : Expenses
-
-        id           -  expense id
-        user_id      -  who spent
-        amount       -  money spent
-        category     -  food, travel, etc
-        payment_mode -  cash, card, UPI
-        date         -  when money was spent
-        description  -  optional note
+   - Built with React + Vite
+   - Styled using Tailwind CSS
+   - Navigation Tabs (Dashboard, Expenses, Analytics, Prediction)
+   - Dark mode toggle
+   - Modern responsive layout
 
 
-LIST OF APIs:
+## Tech Stack
 
-    POST /auth/register   -> create account
-    POST /auth/login      -> login user
-
-    POST /expenses        -> add expense 
-    GET /expenses         -> view expenses
-    PUT /expenses/{id}    -> edit expense
-    DELETE /expenses/{id} -> delete expense
-
-    GET /analytics/monthly
-    GET /analytics/category
-
-    GET /predict/next-month
+-**Backend** : FastAPI, SQLAlchemy ORM, SQLite, JWT Authentication, Passlib (bcrypt), Pydantic, Scikit-learn (prediction)
+-**Frontend** : React (Vite), Tailwind CSS, Axios, Recharts
+-**Tooling** : Git and Github, VS Code, REST APIs
