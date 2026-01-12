@@ -20,15 +20,16 @@ function Prediction() {
 
   return (
     <div>
-      <h2>AI Prediction</h2>
+      <h2 className="text-xl font-semibold mb-2">Prediction</h2>
 
       {prediction && (
         <div>
           <h3>
-            Predicted next month expense: ₹
-            {prediction.predicted_next_month_expense}
+            <p className="text-lg font-bold text-green-600">
+            Next month's Predicted Expense: ₹{prediction.predicted_next_month_expense}
+            </p>
           </h3>
-          <p>Based on last {prediction.months_used} months</p>
+          <p className="text-sm text-gray-500">Based on last {prediction.months_used} months</p>
         </div>
       )}
 
