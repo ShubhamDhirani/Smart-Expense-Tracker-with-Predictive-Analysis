@@ -27,18 +27,18 @@ function App(){
   }, [darkMode]);
 
   if (!auth) {
-    return showRegister ? (
-      <Register onRegister={() => setShowRegister(false)} />
-    ) : (
-      <>
-        <Login onLogin={() => setAuth(true)} />
-        <p>
-          No account?{" "}
-          <button onClick={() => setShowRegister(true)}>Register</button>
-        </p>  
-      </>    
-    );
-  }
+  return showRegister ? (
+    <Register 
+      onRegister={() => setShowRegister(false)} 
+      onSwitchToLogin={() => setShowRegister(false)} 
+    />
+  ) : (
+    <Login 
+      onLogin={() => setAuth(true)} 
+      onSwitchToRegister={() => setShowRegister(true)} 
+    />
+  );
+}
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-gray-100 p-6">
