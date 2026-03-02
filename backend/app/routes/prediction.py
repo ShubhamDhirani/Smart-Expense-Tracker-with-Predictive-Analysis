@@ -34,14 +34,30 @@ def predict_next_month(
             detail="Not enough data to make prediction (need at least 2 months)",
         )
     
-    X = np.array(range(len(results))).reshape(-1, 1)
-    y = np.array([r.total for r in results])
+    months = []
+    totals = []
+
+    for i, r in enumerate(results):
+        year, month = map(int, r.month.split("-"))
+        months.append([year, month])
+        totals.append(r.total)
+
+    X = np.array(months)
+    y = np.array(totals)    
 
     model = LinearRegression()
     model.fit(X, y)
 
-    next_month_index = len(results)
-    predicted = model.predict([[next_month_index]])[0]
+    last_year, last_month = map(int, results[-1].month.split("-"))
+
+    if last_month == 12:
+        next_month = 1
+        next_year = last_year + 1
+    else:
+        next_month = last_month + 1
+        next_year = last_year
+    predicted = model.predict([[next_year, next_month]])[0]        
+    predicted = max(predicted,0)
 
     return {
         "months_used": len(results),
