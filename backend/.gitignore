@@ -10,3 +10,6 @@ __pycache__/
 
 # OS files
 .DS_Store 
+
+#Ignore database files
+expenses_tracker.db 
