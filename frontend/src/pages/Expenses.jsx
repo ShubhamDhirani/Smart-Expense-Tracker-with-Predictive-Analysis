@@ -5,12 +5,14 @@ import {
   deleteExpense,
   updateExpense,
 } from "../api/expenses";
+import API from "../api/api";
 
 function Expenses() {
   const [expenses, setExpenses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
     amount: "",
-    category: "",
+    category_id: "",
     payment_mode: "",
     date: "",
     description: "",
@@ -22,15 +24,27 @@ function Expenses() {
     const res = await getExpenses();
     setExpenses(res.data);
   };
+  
+ 
+
+  const fetchCategories = async () => {
+    try {
+      const res = await API.get("/categories");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Error fetching categories", err);
+    }
+  };
 
   useEffect(() => {
     loadExpenses();
+    fetchCategories();
   }, []);
 
   const resetForm = () => {
     setForm({
       amount: "",
-      category: "",
+      category_id: "",
       payment_mode: "",
       date: "",
       description: "",
@@ -40,11 +54,21 @@ function Expenses() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.category_id) {
+      alert("Please select a category");
+      return;
+    }
 
     if (editingId !== null) {
-      await updateExpense(editingId, form);
+      await updateExpense(editingId, {
+        ...form,
+        category_id: Number(form.category_id),
+      });
     } else {
-      await addExpense(form);
+      await addExpense({
+        ...form,
+        category_id: Number(form.category_id),
+      });
     }
 
     resetForm();
@@ -59,7 +83,7 @@ function Expenses() {
   const handleEdit = (expense) => {
     setForm({
       amount: expense.amount,
-      category: expense.category,
+      category_id:String(expense.category_id),
       payment_mode: expense.payment_mode,
       date: expense.date,
       description: expense.description || "",
@@ -83,15 +107,24 @@ function Expenses() {
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
           />
 
-          <input
+          <select
             className="border p-2 rounded w-full 
                        bg-white dark:bg-gray-800 
-                       text-gray-900 dark:text-gray-100 
-                       placeholder-gray-400 dark:placeholder-gray-500"
-            placeholder="Category"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-          />
+                       text-gray-900 dark:text-gray-100"
+            value={form.category_id}
+            onChange={(e) =>
+              setForm({ ...form, category_id: e.target.value })
+            }
+          >
+            <option value="">Select Category</option>
+
+            {Array.isArray(categories) &&
+              categories.map((cat) => (
+                <option key={cat.id} value={String(cat.id)}>
+                  {cat.name}
+                </option>
+              ))}
+          </select>
 
           <input
             className="border p-2 rounded w-full 
@@ -164,7 +197,7 @@ function Expenses() {
           {expenses.map((e) => (
             <tr className="hover:bg-gray-50 dark:hover:bg-gray-700" key={e.id}>
               <td className="border p-2 text-center text-gray-900 dark:text-gray-100">{e.amount}</td>
-              <td className="border p-2 text-center text-gray-900 dark:text-gray-100">{e.category}</td>
+              <td className="border p-2 text-center text-gray-900 dark:text-gray-100"> {Array.isArray(categories) ? categories.find(c => c.id === e.category_id)?.name || e.category_id : e.category_id} </td>
               <td className="border p-2 text-center text-gray-900 dark:text-gray-100">{e.payment_mode}</td>
               <td className="border p-2 text-center text-gray-900 dark:text-gray-100">{e.date}</td>
               <td className="border p-2 text-center text-gray-900 dark:text-gray-100">{e.description}</td>

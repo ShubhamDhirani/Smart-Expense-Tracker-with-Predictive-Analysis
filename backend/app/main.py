@@ -31,3 +31,5 @@ def root():
 @app.on_event("startup")
 def startup_event():
     seed_categories()
+
+    

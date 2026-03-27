@@ -11,7 +11,7 @@ router = APIRouter(prefix="/expenses", tags=["Expenses"])
 @router.post("/")
 def add_expense(
     amount: float,
-    category: str,
+    category_id: int,
     payment_mode: str,
     date: date,
     description: str = "",
@@ -23,7 +23,7 @@ def add_expense(
     expense = models.Expense(
         user_id=user.id,
         amount=amount,
-        category=category,
+        category_id=category_id,
         payment_mode=payment_mode,
         date=date,
         description=description,
@@ -50,7 +50,7 @@ def get_expenses(
 def update_expense(
     expense_id: int,
     amount: float,
-    category: str,
+    category_id: int,
     payment_mode: str,
     date: date,
     description: str = "",
@@ -67,7 +67,7 @@ def update_expense(
         raise HTTPException(status_code=404, detail="Expense not found")
 
     expense.amount = amount
-    expense.category = category
+    expense.category_id = category_id
     expense.payment_mode = payment_mode
     expense.date = date
     expense.description = description
