@@ -5,7 +5,9 @@ import {
   deleteExpense,
   updateExpense,
 } from "../api/expenses";
-import API from "../api/api";
+import { createCategory, getCategories } from "../api/categories";
+
+const ADD_NEW_CATEGORY_VALUE = "__add_new_category__";
 
 function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -19,20 +21,28 @@ function Expenses() {
   });
 
   const [editingId, setEditingId] = useState(null);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    type: "Flexible",
+    frequency: "",
+  });
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [categoryError, setCategoryError] = useState("");
 
   const loadExpenses = async () => {
     const res = await getExpenses();
     setExpenses(res.data);
   };
-  
- 
 
   const fetchCategories = async () => {
     try {
-      const res = await API.get("/categories");
+      const res = await getCategories();
       setCategories(res.data);
+      return res.data;
     } catch (err) {
       console.error("Error fetching categories", err);
+      return [];
     }
   };
 
@@ -50,6 +60,15 @@ function Expenses() {
       description: "",
     });
     setEditingId(null);
+  };
+
+  const resetCategoryForm = () => {
+    setCategoryForm({
+      name: "",
+      type: "Flexible",
+      frequency: "",
+    });
+    setCategoryError("");
   };
 
   const handleSubmit = async (e) => {
@@ -91,6 +110,60 @@ function Expenses() {
     setEditingId(expense.id); // ✅ FIXED HERE
   };
 
+  const handleCategorySelect = (value) => {
+    if (value === ADD_NEW_CATEGORY_VALUE) {
+      setShowCategoryForm(true);
+      setCategoryError("");
+      return;
+    }
+
+    setShowCategoryForm(false);
+    setCategoryError("");
+    setForm({ ...form, category_id: value });
+  };
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+
+    const trimmedName = categoryForm.name.trim();
+    if (!trimmedName) {
+      setCategoryError("Please enter a category name.");
+      return;
+    }
+
+    if (categoryForm.type === "Fixed" && !categoryForm.frequency.trim()) {
+      setCategoryError("Please enter a frequency for fixed categories.");
+      return;
+    }
+
+    setCategoryLoading(true);
+    setCategoryError("");
+
+    try {
+      const payload = {
+        name: trimmedName,
+        type: categoryForm.type,
+        frequency:
+          categoryForm.type === "Fixed" ? categoryForm.frequency.trim() : null,
+      };
+
+      const res = await createCategory(payload);
+      const createdCategory = res.data;
+
+      await fetchCategories();
+      setForm((current) => ({
+        ...current,
+        category_id: String(createdCategory.id),
+      }));
+      setShowCategoryForm(false);
+      resetCategoryForm();
+    } catch (err) {
+      setCategoryError("Unable to create category right now.");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Add Expense</h2>
@@ -112,9 +185,7 @@ function Expenses() {
                        bg-white dark:bg-gray-800 
                        text-gray-900 dark:text-gray-100"
             value={form.category_id}
-            onChange={(e) =>
-              setForm({ ...form, category_id: e.target.value })
-            }
+            onChange={(e) => handleCategorySelect(e.target.value)}
           >
             <option value="">Select Category</option>
 
@@ -124,6 +195,7 @@ function Expenses() {
                   {cat.name}
                 </option>
               ))}
+            <option value={ADD_NEW_CATEGORY_VALUE}>+ Add New Category</option>
           </select>
 
           <input
@@ -178,6 +250,81 @@ function Expenses() {
           </div>
         </div>
       </form>
+
+      {showCategoryForm && (
+        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-gray-900">
+          <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Create New Category
+          </h3>
+
+          <form onSubmit={handleCreateCategory} className="space-y-3">
+            <input
+              className="w-full rounded border p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              placeholder="Category name"
+              value={categoryForm.name}
+              onChange={(e) =>
+                setCategoryForm({ ...categoryForm, name: e.target.value })
+              }
+            />
+
+            <select
+              className="w-full rounded border p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              value={categoryForm.type}
+              onChange={(e) =>
+                setCategoryForm({
+                  ...categoryForm,
+                  type: e.target.value,
+                  frequency: e.target.value === "Fixed" ? categoryForm.frequency : "",
+                })
+              }
+            >
+              <option value="Flexible">Flexible</option>
+              <option value="Fixed">Fixed</option>
+            </select>
+
+            {categoryForm.type === "Fixed" && (
+              <input
+                className="w-full rounded border p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                placeholder="Frequency"
+                value={categoryForm.frequency}
+                onChange={(e) =>
+                  setCategoryForm({
+                    ...categoryForm,
+                    frequency: e.target.value,
+                  })
+                }
+              />
+            )}
+
+            {categoryError && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {categoryError}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={categoryLoading}
+                className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {categoryLoading ? "Saving..." : "Save Category"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCategoryForm(false);
+                  resetCategoryForm();
+                }}
+                className="rounded bg-gray-200 px-4 py-2 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <h2 className="mt-6 mb-2 font-semibold">Expenses:</h2>
 
