@@ -5,6 +5,10 @@ from datetime import date
 from app.database import get_db
 from app import models
 from app.security import get_current_user
+from app.services.analytics_service import (
+    get_monthly_total,
+    get_category_breakdown,
+)
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
@@ -17,13 +21,7 @@ def monthly_summary(
 ):
     user = db.query(models.User).filter(models.User.email == user_email).first()
 
-    total = (
-        db.query(func.sum(models.Expense.amount))
-        .filter(models.Expense.user_id == user.id)
-        .filter(func.extract("year",models.Expense.date) == year)
-        .filter(func.extract("month", models.Expense.date) == month)
-        .scalar()
-    )
+    total = get_monthly_total(db, user.id, year, month)
 
     return {
         "year": year,
@@ -40,19 +38,4 @@ def category_summary(
 ):
     user = db.query(models.User).filter(models.User.email == user_email).first()
 
-    results = (
-        db.query(
-            models.Expense.category,
-            func.sum(models.Expense.amount).label("total"),
-        )
-        .filter(models.Expense.user_id == user.id)
-        .filter(func.extract("year", models.Expense.date) == year)
-        .filter(func.extract("month", models.Expense.date) == month)
-        .group_by(models.Expense.category)
-        .all()
-    )
-
-    return[
-        {"category": r.category, "total": r.total}
-        for r in results
-    ]
+    return get_category_breakdown(db, user.id, year, month)

@@ -31,3 +31,4 @@ def seed_categories():
             db.add(new_cat)
     db.commit()
     db.close()        
+    
