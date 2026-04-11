@@ -9,6 +9,16 @@ import { createCategory, getCategories } from "../api/categories";
 
 const ADD_NEW_CATEGORY_VALUE = "__add_new_category__";
 
+const PAYMENT_OPTIONS = [
+  "Cash",
+  "UPI",
+  "Credit Card",
+  "Debit Card",
+  "Net Banking",
+  "Wallet",
+  "Other",
+];
+
 function Expenses() {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -70,11 +80,20 @@ function Expenses() {
     });
     setCategoryError("");
   };
-
+// TODO: Improve form validation UX(inline errors instead of alerts)
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!form.amount || Number(form.amount)<=0){
+      alert("please enter a valid amount");
+      return;
+    }
     if (!form.category_id) {
       alert("Please select a category");
+      return;
+    }
+    if (!form.payment_mode) {
+      alert("Please select a payment mode");
       return;
     }
 
@@ -198,17 +217,23 @@ function Expenses() {
             <option value={ADD_NEW_CATEGORY_VALUE}>+ Add New Category</option>
           </select>
 
-          <input
+          <select
             className="border p-2 rounded w-full 
                        bg-white dark:bg-gray-800 
-                       text-gray-900 dark:text-gray-100 
-                       placeholder-gray-400 dark:placeholder-gray-500"
-            placeholder="Payment Mode"
+                       text-gray-900 dark:text-gray-100"
             value={form.payment_mode}
             onChange={(e) =>
               setForm({ ...form, payment_mode: e.target.value })
             }
-          />
+          >
+            <option value="">Select Payment Mode</option>
+
+            {PAYMENT_OPTIONS.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
 
           <input
             className="border p-2 rounded w-full 
