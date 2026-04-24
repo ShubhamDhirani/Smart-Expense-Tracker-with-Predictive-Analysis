@@ -1,31 +1,49 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app import models
+from typing import Optional
+from datetime import date
 
-def get_monthly_total(db: Session, user_id: int, year: int, month: int):
-    total = (
-        db.query(func.sum(models.Expense.amount))
-        .filter(models.Expense.user_id == user_id)
-        .filter(func.extract("year",models.Expense.date)== year)
-        .filter(func.extract("month", models.Expense.date) == month)
-        .scalar()
+def get_monthly_total(db: Session, user_id: int, year: Optional[int] = None, month: Optional[int] = None, start_date: Optional[date] = None, end_date: Optional[date] = None):
+    query = db.query(func.sum(models.Expense.amount)).filter(
+        models.Expense.user_id == user_id
     )
+
+    if start_date and end_date:
+        query = query.filter(
+            models.Expense.date >= start_date,
+            models.Expense.date <= end_date
+        )
+    elif year and month:
+        query = query.filter(
+            func.extract("year", models.Expense.date) == year,
+            func.extract("month", models.Expense.date) == month
+        )
+
+    total = query.scalar()
 
     return total or 0
 
-def get_category_breakdown(db: Session, user_id: int, year: int, month: int):
-    results = (
-        db.query(
-            models.Category.name,
-            func.sum(models.Expense.amount).label("total"),
-        )
-        .join(models.Category, models.Expense.category_id == models.Category.id)
-        .filter(models.Expense.user_id == user_id)
-        .filter(func.extract("year", models.Expense.date) == year)
-        .filter(func.extract("month", models.Expense.date) == month)
-        .group_by(models.Category.name)
-        .all()
+def get_category_breakdown(db: Session, user_id: int, year: Optional[int] = None, month: Optional[int] = None, start_date: Optional[date] = None, end_date: Optional[date] = None):
+    query = db.query(
+        models.Category.name,
+        func.sum(models.Expense.amount).label("total"),
+    ).join(models.Category).filter(
+       models.Expense.user_id == user_id
     )
+
+    if start_date and end_date:
+        query = query.filter(
+            models.Expense.date >= start_date,
+            models.Expense.date <= end_date
+        )
+    elif year and month:
+        query = query.filter(
+            func.extract("year", models.Expense.date) == year,
+            func.extract("month", models.Expense.date) == month
+        )
+
+    results = query.group_by(models.Category.name).all()
 
     return [
         {"category": r.name, "total": r.total}

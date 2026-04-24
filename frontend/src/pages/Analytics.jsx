@@ -11,21 +11,63 @@ import {
 
 const COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
 
+
+
 function Analytics() {
+
   const [monthly, setMonthly] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [filter, setFilter] = useState("this_month");
 
   const today = new Date();
   const year = today.getFullYear();
-  const month = today.getMonth() + 1;
+  const month = today.getMonth()+1;
+
+  const getDateParams = () => {
+    const now = new Date();
+
+    if (filter === "this_month") {
+      return {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+      };
+    }
+
+    if (filter === "last_month") {
+      const date = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+      };
+    }
+
+    if (filter === "today") {
+      return null; 
+    }
+
+    if (filter === "this_week") {
+      return null; 
+    }
+  };
 
   useEffect(() => {
     loadAnalytics();
-  }, []);
+  }, [filter]);
 
   const loadAnalytics = async () => {
-    const monthlyRes = await getMonthlyAnalytics(year, month);
-    const categoryRes = await getCategoryAnalytics(year, month);
+    const params = getDateParams();
+
+    if (!params) return; // skip unsupported filters for now
+
+    const monthlyRes = await getMonthlyAnalytics(
+      params.year,
+      params.month
+    );
+
+    const categoryRes = await getCategoryAnalytics(
+      params.year,
+      params.month
+    );
 
     setMonthly(monthlyRes.data);
     setCategories(categoryRes.data);
@@ -34,7 +76,17 @@ function Analytics() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2">Analytics</h2>
-
+      <select
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="mb-4 p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+      >
+        <option value="this_month">This Month</option>
+        <option value="last_month">Last Month</option>
+        <option value="this_week">This Week</option>
+        <option value="today">Today</option>
+      </select>
+      
       {monthly && (
         <div className="mb-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
