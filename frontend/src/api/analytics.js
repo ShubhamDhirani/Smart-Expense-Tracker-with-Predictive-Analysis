@@ -1,7 +1,7 @@
 import API from "./api";
 
-export const getMonthlyAnalytics = (year, month) =>
-  API.get("/analytics/monthly", { params: { year, month } });
+export const getMonthlyAnalytics = (params) =>
+  API.get("/analytics/monthly", { params });
 
-export const getCategoryAnalytics = (year, month) =>
-  API.get("/analytics/category", { params: { year, month } });
+export const getCategoryAnalytics = (params) =>
+  API.get("/analytics/category", { params });

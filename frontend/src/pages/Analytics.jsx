@@ -42,13 +42,25 @@ function Analytics() {
     }
 
     if (filter === "today") {
-      return null; 
+      const todayStr = now.toISOString().split("T")[0];
+      return {
+        start_date: todayStr,
+        end_date: todayStr,
+      };
     }
 
     if (filter === "this_week") {
-      return null; 
-    }
-  };
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 7);
+
+    return {
+      start_date: start.toISOString().split("T")[0],
+      end_date: end.toISOString().split("T")[0],
+    };
+  }
+  return null;
+}
 
   useEffect(() => {
     loadAnalytics();
@@ -59,15 +71,8 @@ function Analytics() {
 
     if (!params) return; // skip unsupported filters for now
 
-    const monthlyRes = await getMonthlyAnalytics(
-      params.year,
-      params.month
-    );
-
-    const categoryRes = await getCategoryAnalytics(
-      params.year,
-      params.month
-    );
+    const monthlyRes = await getMonthlyAnalytics(params);
+    const categoryRes = await getCategoryAnalytics(params);
 
     setMonthly(monthlyRes.data);
     setCategories(categoryRes.data);
