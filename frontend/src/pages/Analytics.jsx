@@ -18,6 +18,8 @@ function Analytics() {
   const [monthly, setMonthly] = useState(null);
   const [categories, setCategories] = useState([]);
   const [filter, setFilter] = useState("this_month");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const today = new Date();
   const year = today.getFullYear();
@@ -59,12 +61,21 @@ function Analytics() {
       end_date: end.toISOString().split("T")[0],
     };
   }
+  if (filter === "custom"){
+    if(!startDate || !endDate) return null;
+
+    return {
+      start_date: startDate,
+      end_date: endDate,
+    };
+  }
+
   return null;
 }
 
   useEffect(() => {
     loadAnalytics();
-  }, [filter]);
+  }, [filter, startDate, endDate]);
 
   const loadAnalytics = async () => {
     const params = getDateParams();
@@ -90,7 +101,25 @@ function Analytics() {
         <option value="last_month">Last Month</option>
         <option value="this_week">This Week</option>
         <option value="today">Today</option>
+        <option value="custom">Custom Range</option>
       </select>
+
+      {filter === "custom" && (
+        <div className="flex gap-2 mb-4">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border p-2 rounded"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border p-2 rounded"
+          />
+        </div>      
+      )}
       
       {monthly && (
         <div className="mb-4">
