@@ -20,6 +20,7 @@ function Analytics() {
   const [filter, setFilter] = useState("this_month");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const today = new Date();
   const year = today.getFullYear();
@@ -88,6 +89,10 @@ function Analytics() {
     setMonthly(monthlyRes.data);
     setCategories(categoryRes.data);
   };
+  const filteredTotal = 
+    selectedCategory === "all"
+      ? monthly?.total_expense
+      : categories.find((c) => c.category === selectedCategory)?.total || 0;
 
   return (
     <div>
@@ -102,6 +107,20 @@ function Analytics() {
         <option value="this_week">This Week</option>
         <option value="today">Today</option>
         <option value="custom">Custom Range</option>
+      </select>
+
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        className="mb-4 p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+      >
+        <option value="all">All Categories</option>
+
+        {categories.map((c, index) => (
+          <option key={index} value={c.category}>
+            {c.category}
+          </option>
+        ))}
       </select>
 
       {filter === "custom" && (
@@ -127,7 +146,7 @@ function Analytics() {
           Total spending this month
           </p>
           <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          ₹{monthly.total_expense}
+          ₹{filteredTotal}
         </p>
       </div>
       )}
@@ -139,7 +158,11 @@ function Analytics() {
           <div className="max-w-md mx-auto">
           <PieChart>
             <Pie
-              data={categories}
+              data={
+                selectedCategory === "all"
+                  ? categories
+                  : categories.filter((c) => c.category === selectedCategory)
+              }
               dataKey="total"
               nameKey="category"
               outerRadius={100}
