@@ -11,6 +11,8 @@ from app.services.analytics_service import (
 )
 from typing import Optional
 from datetime import date
+from app.services.analytics_service import get_trend_data
+
 
 
 
@@ -47,3 +49,17 @@ def category_summary(
     user = db.query(models.User).filter(models.User.email == user_email).first()
 
     return get_category_breakdown(db, user.id, year, month, start_date, end_date)
+
+
+@router.get("/trend")
+def trend_data(
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    db: Session = Depends(get_db),
+    user_email: str = Depends(get_current_user),
+
+):
+    user = db.query(models.User).filter(models.User.email == user_email).first()
+
+    return get_trend_data(db, user.id, start_date, end_date)
+

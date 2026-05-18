@@ -5,3 +5,6 @@ export const getMonthlyAnalytics = (params) =>
 
 export const getCategoryAnalytics = (params) =>
   API.get("/analytics/category", { params });
+
+export const getTrendData = (params) =>
+  API.get("/analytics/trend",{ params });

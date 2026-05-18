@@ -8,6 +8,14 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
+import { getTrendData } from "../api/analytics";
 
 const COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -21,6 +29,7 @@ function Analytics() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const[trendData, setTrendData] = useState([]);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -77,11 +86,17 @@ function Analytics() {
   useEffect(() => {
     loadAnalytics();
   }, [filter, startDate, endDate]);
-
+  
+  
   const loadAnalytics = async () => {
     const params = getDateParams();
 
-    if (!params) return; // skip unsupported filters for now
+    
+
+    if (!params) return; 
+    
+    const trendRes = await getTrendData(params);
+    setTrendData(trendRes.data);
 
     const monthlyRes = await getMonthlyAnalytics(params);
     const categoryRes = await getCategoryAnalytics(params);
@@ -95,7 +110,7 @@ function Analytics() {
       : categories.find((c) => c.category === selectedCategory)?.total || 0;
 
   return (
-    <div>
+    <><div>
       <h2 className="text-xl font-semibold mb-2">Analytics</h2>
       <select
         value={filter}
@@ -129,26 +144,24 @@ function Analytics() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="border p-2 rounded"
-          />
+            className="border p-2 rounded" />
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="border p-2 rounded"
-          />
-        </div>      
+            className="border p-2 rounded" />
+        </div>
       )}
-      
+
       {monthly && (
         <div className="mb-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-          Total spending this month
+            Total spending this month
           </p>
           <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          ₹{filteredTotal}
-        </p>
-      </div>
+            ₹{filteredTotal}
+          </p>
+        </div>
       )}
 
       <h3>Category Breakdown</h3>
@@ -156,33 +169,41 @@ function Analytics() {
       <div style={{ width: "400px", height: "300px" }}>
         <ResponsiveContainer>
           <div className="max-w-md mx-auto">
-          <PieChart>
-            <Pie
-              data={
-                selectedCategory === "all"
+            <PieChart>
+              <Pie
+                data={selectedCategory === "all"
                   ? categories
-                  : categories.filter((c) => c.category === selectedCategory)
-              }
-              dataKey="total"
-              nameKey="category"
-              outerRadius={100}
-              innerRadius={60}
-              paddingAngle={3}
-            >
-              {categories.map((_, index) => (
-                <Cell
-                  key={index}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Legend/>
-            <Tooltip />
-          </PieChart>
+                  : categories.filter((c) => c.category === selectedCategory)}
+                dataKey="total"
+                nameKey="category"
+                outerRadius={100}
+                innerRadius={60}
+                paddingAngle={3}
+              >
+                {categories.map((_, index) => (
+                  <Cell
+                    key={index}
+                    fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
           </div>
         </ResponsiveContainer>
       </div>
-    </div>
+    </div><h3 className="mt-6">Spending Trend</h3><div style={{ width: "100%", height: "300px" }}>
+        <ResponsiveContainer>
+          <LineChart data={trendData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="total" stroke="#3b82f6" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div></>
+    
   );
 }
 
