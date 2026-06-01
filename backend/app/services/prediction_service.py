@@ -13,8 +13,6 @@ from sklearn.metrics import (
     r2_score,
 )
 
-from sklearn.model_selection import train_test_split
-
 WINDOW_SIZE = 3
 
 def get_daily_totals(db: Session, user_id: int):
@@ -42,9 +40,31 @@ def prepare_features(results):
         window = daily_totals[i:i + WINDOW_SIZE]
 
         avg = sum(window) / WINDOW_SIZE
+
+        trend = window[-1] - window[0]
+
+        std = np.std(window)
+
+        start_index = max(0, i - 6)
+        weekly_window = daily_totals[start_index:i + WINDOW_SIZE]
+
+        weekly_avg = np.mean(weekly_window)
+
         day_index = results[i + WINDOW_SIZE].date.weekday()
 
-        features = window + [avg, day_index]
+        day_of_month = results[i + WINDOW_SIZE].date.day
+        month = results[i + WINDOW_SIZE].date.month
+
+        features = window + [
+            avg,
+            trend,
+            std,
+            weekly_avg,
+
+            day_index,
+            day_of_month,
+            month,
+        ]
 
         X.append(features)
         y.append(daily_totals[i + WINDOW_SIZE])
@@ -97,12 +117,13 @@ def forecast_future_expenses(
 
 def evaluate_models(X,y):
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        random_state = 42,
-    )
+    split_index = int(len(X) * 0.8)
+
+    X_train = X[:split_index]
+    X_test = X[split_index:]
+
+    y_train = y[:split_index]
+    y_test = y[split_index:]
 
     linear_model = LinearRegression()
     linear_model.fit(X_train,y_train)
