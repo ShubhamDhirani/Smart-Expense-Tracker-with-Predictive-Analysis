@@ -98,9 +98,29 @@ def forecast_future_expenses(
     for day in range(days_to_predict):
 
         avg = sum(current_window) / WINDOW_SIZE
+
+        trend = current_window[-1] - current_window[0]
+
+        std = np.std(current_window)
+
+        weekly_avg = np.mean(current_window)
+
         day_index = day % 7
 
-        features = current_window + [avg, day_index]
+        # synthetic future values
+        day_of_month = (day % 30) + 1
+
+        month = ((day // 30) % 12) + 1
+
+        features = current_window + [
+            avg,
+            trend,
+            std,
+            weekly_avg,
+            day_index,
+            day_of_month,
+            month,
+        ]
 
         linear_pred = linear_model.predict([features])[0]
         rf_pred = rf_model.predict([features])[0]

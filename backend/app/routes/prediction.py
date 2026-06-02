@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+import numpy as np
 
 from app.database import get_db
 from app import models
@@ -41,9 +42,29 @@ def predict_next_day(
     last_window = daily_totals[-WINDOW_SIZE:]
 
     avg = sum(last_window) / WINDOW_SIZE
+
+    trend = last_window[-1] - last_window[0]
+
+    std = np.std(last_window)
+
+    weekly_window = daily_totals[-7:]
+    weekly_avg = np.mean(weekly_window)
+
     day_index = results[-1].date.weekday()
 
-    features = last_window + [avg, day_index]
+    day_of_month = results[-1].date.day
+
+    month = results[-1].date.month
+
+    features = last_window + [
+        avg,
+        trend,
+        std,
+        weekly_avg,
+        day_index,
+        day_of_month,
+        month,
+    ]
 
     linear_prediction = linear_model.predict([features])[0]
     rf_prediction = rf_model.predict([features])[0]
