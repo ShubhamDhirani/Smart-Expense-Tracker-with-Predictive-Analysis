@@ -11,3 +11,7 @@ export const getNextMonthPrediction = () =>
 
 export const getMetrics = () =>
   API.get("/predict/metrics");
+
+export const getAIInsights = () =>
+  API.get("/predict/insights");
+

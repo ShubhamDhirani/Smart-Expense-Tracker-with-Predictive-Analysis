@@ -3,6 +3,8 @@ import {
   getNextDayPrediction,
   getNextWeekPrediction,
   getNextMonthPrediction,
+  getMetrics,
+  getAIInsights,
 } from "../api/prediction";
 
 import { getMonthlyAnalytics } from "../api/analytics";
@@ -13,6 +15,9 @@ function Prediction() {
   const [nextMonth, setNextMonth] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(null);
   const [lastMonth, setLastMonth] = useState(null)
+  const [showMetrics, setShowMetrics] = useState(false);
+  const [metrics, setMetrics] = useState(null);
+  const [aiInsights, setAIInsights] = useState("");
   const [error, setError] = useState("");
   const today = new Date();
 
@@ -101,6 +106,8 @@ function Prediction() {
     const dayRes = await getNextDayPrediction();
     const weekRes = await getNextWeekPrediction();
     const monthRes = await getNextMonthPrediction();
+    const metricsRes = await getMetrics();
+    const insightsRes = await getAIInsights();
     const today = new Date();
 
     const currentMonthRes =
@@ -124,6 +131,8 @@ function Prediction() {
     setNextDay(dayRes.data);
     setNextWeek(weekRes.data);
     setNextMonth(monthRes.data);
+    setMetrics(metricsRes.data);
+    setAIInsights(insightsRes.data.insights);
     setCurrentMonth(currentMonthRes.data);
     setLastMonth(lastMonthRes.data);
 
@@ -231,6 +240,106 @@ function Prediction() {
     </p>
   </div>
 )}
+{aiInsights && (
+  <div className="p-5 rounded-lg border shadow mt-6">
+    <h3 className="text-lg font-semibold mb-3">
+      AI Financial Insights
+    </h3>
+
+    <div className="whitespace-pre-line">
+      {aiInsights}
+    </div>
+  </div>
+)}
+
+<div className="mt-6">
+  <button
+    onClick={() => setShowMetrics(!showMetrics)}
+    className="px-4 py-2 border rounded"
+  >
+    {showMetrics
+      ? "Hide Model Details ▲"
+      : "Show Model Details ▼"}
+  </button>
+  
+</div>
+{showMetrics && metrics && (
+  <div className="p-5 rounded-lg border shadow mt-4">
+    <h3 className="text-lg font-semibold mb-4">
+      Model Performance
+    </h3>
+
+    <div className="mb-4">
+      <h4 className="font-semibold">
+        Random Forest
+      </h4>
+
+      <p>
+        R² Score:
+        <span className="font-bold ml-2">
+          {metrics.random_forest.r2_score}
+        </span>
+      </p>
+
+      <p>
+        MAE:
+        <span className="font-bold ml-2">
+          {metrics.random_forest.mae}
+        </span>
+      </p>
+
+      <p>
+        RMSE:
+        <span className="font-bold ml-2">
+          {metrics.random_forest.rmse}
+        </span>
+      </p>
+    </div>
+
+    <div className="mb-4">
+      <h4 className="font-semibold">
+        Linear Regression
+      </h4>
+
+      <p>
+        R² Score:
+        <span className="font-bold ml-2">
+          {metrics.linear_regression.r2_score}
+        </span>
+      </p>
+
+      <p>
+        MAE:
+        <span className="font-bold ml-2">
+          {metrics.linear_regression.mae}
+        </span>
+      </p>
+
+      <p>
+        RMSE:
+        <span className="font-bold ml-2">
+          {metrics.linear_regression.rmse}
+        </span>
+      </p>
+    </div>
+
+    <div className="mt-4 p-3 border rounded">
+      <p className="font-medium">
+        Selected Model:
+        <span className="ml-2 text-green-600">
+          Random Forest
+        </span>
+      </p>
+
+      <p className="text-sm mt-2">
+        Random Forest is currently used as the primary
+        forecasting model because it achieves better
+        predictive accuracy than Linear Regression.
+      </p>
+    </div>
+  </div>
+)}
+
 
 
 
