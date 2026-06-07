@@ -6,6 +6,7 @@ import numpy as np
 from app.database import get_db
 from app import models
 from app.security import get_current_user
+from app.services.insight_service import generate_ai_insights
 
 from app.services.prediction_service import (
     get_daily_totals,
@@ -175,3 +176,75 @@ def get_model_metrics(
     metrics = evaluate_models(X, y)
 
     return metrics
+
+@router.get("/insights")
+def get_ai_insights(
+    db: Session = Depends(get_db),
+    user_email: str = Depends(get_current_user),
+):
+    user = (
+        db.query(models.User)
+        .filter(models.User.email == user_email)
+        .first()
+    )
+
+    results = get_daily_totals(db, user.id)
+
+    if len(results) < 30:
+        raise HTTPException(
+            status_code=400,
+            detail="Not enough data for AI insights",
+        )
+
+    # ---------- Monthly comparison ----------
+
+    daily_totals = [r.total for r in results]
+
+    current_daily_avg = np.mean(daily_totals[-7:])
+
+    previous_daily_avg = np.mean(
+        daily_totals[-14:-7]
+    )
+
+    pace_change = (
+        ((current_daily_avg - previous_daily_avg)
+         / previous_daily_avg)
+        * 100
+    )
+
+    # ---------- Forecast ----------
+
+    X, y, _ = prepare_features(results)
+
+    metrics = evaluate_models(X, y)
+
+    rf_r2 = metrics["random_forest"]["r2_score"]
+
+    linear_model, rf_model = train_models(X, y)
+
+    predictions = forecast_future_expenses(
+        linear_model,
+        rf_model,
+        daily_totals,
+        days_to_predict=30,
+    )
+
+    predicted_month = sum(predictions)
+
+    recent_month = sum(daily_totals[-30:])
+
+    forecast_change = (
+        ((predicted_month - recent_month)
+         / recent_month)
+        * 100
+    )
+
+    insights = generate_ai_insights(
+        pace_change=round(pace_change, 1),
+        forecast_change=round(forecast_change, 1),
+        rf_r2=rf_r2,
+    )
+
+    return {
+        "insights": insights
+    }
