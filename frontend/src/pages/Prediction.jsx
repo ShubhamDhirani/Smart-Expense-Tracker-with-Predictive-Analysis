@@ -17,7 +17,8 @@ function Prediction() {
   const [lastMonth, setLastMonth] = useState(null)
   const [showMetrics, setShowMetrics] = useState(false);
   const [metrics, setMetrics] = useState(null);
-  const [aiInsights, setAIInsights] = useState("");
+  const [aiInsights, setAIInsights] = useState([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
   const [error, setError] = useState("");
   const today = new Date();
 
@@ -107,6 +108,7 @@ function Prediction() {
     const weekRes = await getNextWeekPrediction();
     const monthRes = await getNextMonthPrediction();
     const metricsRes = await getMetrics();
+    setLoadingInsights(true);
     const insightsRes = await getAIInsights();
     const today = new Date();
 
@@ -133,10 +135,12 @@ function Prediction() {
     setNextMonth(monthRes.data);
     setMetrics(metricsRes.data);
     setAIInsights(insightsRes.data.insights);
+    setLoadingInsights(false);
     setCurrentMonth(currentMonthRes.data);
     setLastMonth(lastMonthRes.data);
 
   } catch (err) {
+    setLoadingInsights(false);
     setError("Unable to load predictions.");
   }
 };
@@ -246,11 +250,24 @@ function Prediction() {
       AI Financial Insights
     </h3>
 
-    <div className="whitespace-pre-line">
-      {aiInsights}
+    <p className="text-sm text-gray-500 mb-4">
+      Generated using local Mistral AI
+    </p>
+
+    {loadingInsights ? (
+      <p>Generating AI insights...</p>
+    ) : (  
+      <ul className="space-y-3">
+        {aiInsights.map((insight, index) => (
+          <li key={index}>
+            • {insight}
+          </li>
+        ))}
+      </ul>
+    )}
     </div>
-  </div>
 )}
+
 
 <div className="mt-6">
   <button
