@@ -6,6 +6,7 @@ import {
 } from "../api/analytics";
 
 import { getAIInsights } from "../api/prediction";
+import QuickExpense from "../components/QuickExpense";
 
 function Dashboard() {
   const [currentMonth, setCurrentMonth] = useState(0);
@@ -137,6 +138,9 @@ function Dashboard() {
         </div>
 
       </div>
+
+      <QuickExpense />
+      
 
       <div className="p-5 rounded-lg border shadow">
         <h3 className="text-lg font-semibold mb-4">
