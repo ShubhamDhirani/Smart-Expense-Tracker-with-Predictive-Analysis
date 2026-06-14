@@ -5,6 +5,8 @@ import { isAuthenticated, logout} from "./auth/authService";
 import Expenses from "./pages/Expenses";
 import Analytics from "./pages/Analytics";
 import Prediction from "./pages/Prediction";
+import Chatbot from "./components/Chatbot";
+import Dashboard from "./pages/Dashboard";
 
 
 
@@ -85,11 +87,8 @@ function App(){
         </div>
         
         {activeTab === "dashboard" && (
-  <div className="space-y-6">
-    <Analytics />
-    <Prediction />
-  </div>
-)}
+          <Dashboard />
+        )}
 
 {activeTab === "expenses" && <Expenses />}
 
@@ -97,6 +96,8 @@ function App(){
 
 {activeTab === "prediction" && <Prediction />}
       </div>
+
+      <Chatbot />
     </div>
   );
 }

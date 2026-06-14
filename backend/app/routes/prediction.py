@@ -7,6 +7,9 @@ from app.database import get_db
 from app import models
 from app.security import get_current_user
 from app.services.insight_service import generate_ai_insights
+from app.services.analytics_service import (
+    get_category_breakdown,
+)
 
 from app.services.prediction_service import (
     get_daily_totals,
@@ -233,6 +236,19 @@ def get_ai_insights(
 
     recent_month = sum(daily_totals[-30:])
 
+    categories = get_category_breakdown(
+    db,
+    user.id,
+    )
+
+    highest_category = "Unknown"
+
+    if categories:
+        highest_category = max(
+            categories,
+            key=lambda x: x["total"]
+        )["category"]
+
     forecast_change = (
         ((predicted_month - recent_month)
          / recent_month)
@@ -240,10 +256,11 @@ def get_ai_insights(
     )
 
     insights = generate_ai_insights(
-        pace_change=round(pace_change, 1),
-        forecast_change=round(forecast_change, 1),
-        rf_r2=rf_r2,
-    )
+    current_month=round(recent_month),
+    predicted_month=round(predicted_month),
+    highest_category=highest_category,
+    pace_change=round(pace_change, 1),
+)
 
     return {
         "insights": insights

@@ -3,42 +3,33 @@ from langchain_ollama import OllamaLLM as Ollama
 llm = Ollama(model="mistral")
 
 def generate_ai_insights(
+    current_month,
+    predicted_month,
+    highest_category,
     pace_change,
-    forecast_change,
-    rf_r2,
 ):
     prompt = f"""
-You are a personal finance analyst.
+    You are a personal finance analyst.
 
-Financial Facts:
+    Financial Facts:
 
-- Spending pace changed by {pace_change}% compared to the previous period.
-- Next month's spending is projected to change by {forecast_change}%.
-- Forecast reliability score is {rf_r2}.
+    - Current month spending: ₹{current_month}
+    - Predicted next month spending: ₹{predicted_month}
+    - Highest spending category: {highest_category}
+    - Spending pace change: {pace_change}%
 
-Generate exactly 3 bullet-point insights.
+    Generate exactly 3 useful insights.
 
-Requirements:
+    Requirements:
 
-1. First bullet:
-   Explain the user's current spending behaviour.
+    1. Mention the highest spending category if relevant.
+    2. Mention spending trend if relevant.
+    3. Give one practical recommendation.
+    4. Avoid generic advice.
+    5. Maximum 15 words per insight.
 
-2. Second bullet:
-   Explain what the forecast means for next month.
-
-3. Third bullet:
-   Give a practical recommendation.
-
-4. Do NOT repeat the same information.
-
-5. Do NOT explain calculations.
-
-6. Do NOT mention machine learning, AI, models, or reliability scores.
-
-7. Keep each bullet under 15 words.
-
-Return ONLY the 3 bullet points.
-"""
+    Return only the 3 bullet points.
+    """
 
     response = llm.invoke(prompt)
 
